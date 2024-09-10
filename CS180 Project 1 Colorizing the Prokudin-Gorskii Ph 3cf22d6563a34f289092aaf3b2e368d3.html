@@ -1,0 +1,715 @@
+<html><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><title>CS180 Project 1: Colorizing the Prokudin-Gorskii Photo Collection</title><style>
+/* cspell:disable-file */
+/* webkit printing magic: print all background colors */
+html {
+	-webkit-print-color-adjust: exact;
+}
+* {
+	box-sizing: border-box;
+	-webkit-print-color-adjust: exact;
+}
+
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+@media only screen {
+	body {
+		margin: 2em auto;
+		max-width: 900px;
+		color: rgb(55, 53, 47);
+	}
+}
+
+body {
+	line-height: 1.5;
+	white-space: pre-wrap;
+}
+
+a,
+a.visited {
+	color: inherit;
+	text-decoration: underline;
+}
+
+.pdf-relative-link-path {
+	font-size: 80%;
+	color: #444;
+}
+
+h1,
+h2,
+h3 {
+	letter-spacing: -0.01em;
+	line-height: 1.2;
+	font-weight: 600;
+	margin-bottom: 0;
+}
+
+.page-title {
+	font-size: 2.5rem;
+	font-weight: 700;
+	margin-top: 0;
+	margin-bottom: 0.75em;
+}
+
+h1 {
+	font-size: 1.875rem;
+	margin-top: 1.875rem;
+}
+
+h2 {
+	font-size: 1.5rem;
+	margin-top: 1.5rem;
+}
+
+h3 {
+	font-size: 1.25rem;
+	margin-top: 1.25rem;
+}
+
+.source {
+	border: 1px solid #ddd;
+	border-radius: 3px;
+	padding: 1.5em;
+	word-break: break-all;
+}
+
+.callout {
+	border-radius: 3px;
+	padding: 1rem;
+}
+
+figure {
+	margin: 1.25em 0;
+	page-break-inside: avoid;
+}
+
+figcaption {
+	opacity: 0.5;
+	font-size: 85%;
+	margin-top: 0.5em;
+}
+
+mark {
+	background-color: transparent;
+}
+
+.indented {
+	padding-left: 1.5em;
+}
+
+hr {
+	background: transparent;
+	display: block;
+	width: 100%;
+	height: 1px;
+	visibility: visible;
+	border: none;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.09);
+}
+
+img {
+	max-width: 100%;
+}
+
+@media only print {
+	img {
+		max-height: 100vh;
+		object-fit: contain;
+	}
+}
+
+@page {
+	margin: 1in;
+}
+
+.collection-content {
+	font-size: 0.875rem;
+}
+
+.column-list {
+	display: flex;
+	justify-content: space-between;
+}
+
+.column {
+	padding: 0 1em;
+}
+
+.column:first-child {
+	padding-left: 0;
+}
+
+.column:last-child {
+	padding-right: 0;
+}
+
+.table_of_contents-item {
+	display: block;
+	font-size: 0.875rem;
+	line-height: 1.3;
+	padding: 0.125rem;
+}
+
+.table_of_contents-indent-1 {
+	margin-left: 1.5rem;
+}
+
+.table_of_contents-indent-2 {
+	margin-left: 3rem;
+}
+
+.table_of_contents-indent-3 {
+	margin-left: 4.5rem;
+}
+
+.table_of_contents-link {
+	text-decoration: none;
+	opacity: 0.7;
+	border-bottom: 1px solid rgba(55, 53, 47, 0.18);
+}
+
+table,
+th,
+td {
+	border: 1px solid rgba(55, 53, 47, 0.09);
+	border-collapse: collapse;
+}
+
+table {
+	border-left: none;
+	border-right: none;
+}
+
+th,
+td {
+	font-weight: normal;
+	padding: 0.25em 0.5em;
+	line-height: 1.5;
+	min-height: 1.5em;
+	text-align: left;
+}
+
+th {
+	color: rgba(55, 53, 47, 0.6);
+}
+
+ol,
+ul {
+	margin: 0;
+	margin-block-start: 0.6em;
+	margin-block-end: 0.6em;
+}
+
+li > ol:first-child,
+li > ul:first-child {
+	margin-block-start: 0.6em;
+}
+
+ul > li {
+	list-style: disc;
+}
+
+ul.to-do-list {
+	padding-inline-start: 0;
+}
+
+ul.to-do-list > li {
+	list-style: none;
+}
+
+.to-do-children-checked {
+	text-decoration: line-through;
+	opacity: 0.375;
+}
+
+ul.toggle > li {
+	list-style: none;
+}
+
+ul {
+	padding-inline-start: 1.7em;
+}
+
+ul > li {
+	padding-left: 0.1em;
+}
+
+ol {
+	padding-inline-start: 1.6em;
+}
+
+ol > li {
+	padding-left: 0.2em;
+}
+
+.mono ol {
+	padding-inline-start: 2em;
+}
+
+.mono ol > li {
+	text-indent: -0.4em;
+}
+
+.toggle {
+	padding-inline-start: 0em;
+	list-style-type: none;
+}
+
+/* Indent toggle children */
+.toggle > li > details {
+	padding-left: 1.7em;
+}
+
+.toggle > li > details > summary {
+	margin-left: -1.1em;
+}
+
+.selected-value {
+	display: inline-block;
+	padding: 0 0.5em;
+	background: rgba(206, 205, 202, 0.5);
+	border-radius: 3px;
+	margin-right: 0.5em;
+	margin-top: 0.3em;
+	margin-bottom: 0.3em;
+	white-space: nowrap;
+}
+
+.collection-title {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+.page-description {
+    margin-bottom: 2em;
+}
+
+.simple-table {
+	margin-top: 1em;
+	font-size: 0.875rem;
+	empty-cells: show;
+}
+.simple-table td {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table th {
+	height: 29px;
+	min-width: 120px;
+}
+
+.simple-table-header-color {
+	background: rgb(247, 246, 243);
+	color: black;
+}
+.simple-table-header {
+	font-weight: 500;
+}
+
+time {
+	opacity: 0.5;
+}
+
+.icon {
+	display: inline-block;
+	max-width: 1.2em;
+	max-height: 1.2em;
+	text-decoration: none;
+	vertical-align: text-bottom;
+	margin-right: 0.5em;
+}
+
+img.icon {
+	border-radius: 3px;
+}
+
+.user-icon {
+	width: 1.5em;
+	height: 1.5em;
+	border-radius: 100%;
+	margin-right: 0.5rem;
+}
+
+.user-icon-inner {
+	font-size: 0.8em;
+}
+
+.text-icon {
+	border: 1px solid #000;
+	text-align: center;
+}
+
+.page-cover-image {
+	display: block;
+	object-fit: cover;
+	width: 100%;
+	max-height: 30vh;
+}
+
+.page-header-icon {
+	font-size: 3rem;
+	margin-bottom: 1rem;
+}
+
+.page-header-icon-with-cover {
+	margin-top: -0.72em;
+	margin-left: 0.07em;
+}
+
+.page-header-icon img {
+	border-radius: 3px;
+}
+
+.link-to-page {
+	margin: 1em 0;
+	padding: 0;
+	border: none;
+	font-weight: 500;
+}
+
+p > .user {
+	opacity: 0.5;
+}
+
+td > .user,
+td > time {
+	white-space: nowrap;
+}
+
+input[type="checkbox"] {
+	transform: scale(1.5);
+	margin-right: 0.6em;
+	vertical-align: middle;
+}
+
+p {
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+}
+
+.image {
+	border: none;
+	margin: 1.5em 0;
+	padding: 0;
+	border-radius: 0;
+	text-align: center;
+}
+
+.code,
+code {
+	background: rgba(135, 131, 120, 0.15);
+	border-radius: 3px;
+	padding: 0.2em 0.4em;
+	border-radius: 3px;
+	font-size: 85%;
+	tab-size: 2;
+}
+
+code {
+	color: #eb5757;
+}
+
+.code {
+	padding: 1.5em 1em;
+}
+
+.code-wrap {
+	white-space: pre-wrap;
+	word-break: break-all;
+}
+
+.code > code {
+	background: none;
+	padding: 0;
+	font-size: 100%;
+	color: inherit;
+}
+
+blockquote {
+	font-size: 1.25em;
+	margin: 1em 0;
+	padding-left: 1em;
+	border-left: 3px solid rgb(55, 53, 47);
+}
+
+.bookmark {
+	text-decoration: none;
+	max-height: 8em;
+	padding: 0;
+	display: flex;
+	width: 100%;
+	align-items: stretch;
+}
+
+.bookmark-title {
+	font-size: 0.85em;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	height: 1.75em;
+	white-space: nowrap;
+}
+
+.bookmark-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.bookmark-info {
+	flex: 4 1 180px;
+	padding: 12px 14px 14px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+}
+
+.bookmark-image {
+	width: 33%;
+	flex: 1 1 180px;
+	display: block;
+	position: relative;
+	object-fit: cover;
+	border-radius: 1px;
+}
+
+.bookmark-description {
+	color: rgba(55, 53, 47, 0.6);
+	font-size: 0.75em;
+	overflow: hidden;
+	max-height: 4.5em;
+	word-break: break-word;
+}
+
+.bookmark-href {
+	font-size: 0.75em;
+	margin-top: 0.25em;
+}
+
+.sans { font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol"; }
+.code { font-family: "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace; }
+.serif { font-family: Lyon-Text, Georgia, ui-serif, serif; }
+.mono { font-family: iawriter-mono, Nitti, Menlo, Courier, monospace; }
+.pdf .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK JP'; }
+.pdf:lang(zh-CN) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK SC'; }
+.pdf:lang(zh-TW) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK TC'; }
+.pdf:lang(ko-KR) .sans { font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI Variable Display", "Segoe UI", Helvetica, "Apple Color Emoji", Arial, sans-serif, "Segoe UI Emoji", "Segoe UI Symbol", 'Twemoji', 'Noto Color Emoji', 'Noto Sans CJK KR'; }
+.pdf .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .code { font-family: Source Code Pro, "SFMono-Regular", Menlo, Consolas, "PT Mono", "Liberation Mono", Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.pdf .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK JP'; }
+.pdf:lang(zh-CN) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK SC'; }
+.pdf:lang(zh-TW) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK TC'; }
+.pdf:lang(ko-KR) .serif { font-family: PT Serif, Lyon-Text, Georgia, ui-serif, serif, 'Twemoji', 'Noto Color Emoji', 'Noto Serif CJK KR'; }
+.pdf .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK JP'; }
+.pdf:lang(zh-CN) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK SC'; }
+.pdf:lang(zh-TW) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK TC'; }
+.pdf:lang(ko-KR) .mono { font-family: PT Mono, iawriter-mono, Nitti, Menlo, Courier, monospace, 'Twemoji', 'Noto Color Emoji', 'Noto Sans Mono CJK KR'; }
+.highlight-default {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.highlight-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.highlight-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.highlight-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.highlight-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.highlight-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.highlight-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.highlight-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.highlight-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.highlight-default_background {
+	color: rgba(55, 53, 47, 1);
+}
+.highlight-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.highlight-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.highlight-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.highlight-yellow_background {
+	background: rgba(251, 237, 214, 1);
+}
+.highlight-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.highlight-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.highlight-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.highlight-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.highlight-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.block-color-default {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray {
+	color: rgba(120, 119, 116, 1);
+	fill: rgba(120, 119, 116, 1);
+}
+.block-color-brown {
+	color: rgba(159, 107, 83, 1);
+	fill: rgba(159, 107, 83, 1);
+}
+.block-color-orange {
+	color: rgba(217, 115, 13, 1);
+	fill: rgba(217, 115, 13, 1);
+}
+.block-color-yellow {
+	color: rgba(203, 145, 47, 1);
+	fill: rgba(203, 145, 47, 1);
+}
+.block-color-teal {
+	color: rgba(68, 131, 97, 1);
+	fill: rgba(68, 131, 97, 1);
+}
+.block-color-blue {
+	color: rgba(51, 126, 169, 1);
+	fill: rgba(51, 126, 169, 1);
+}
+.block-color-purple {
+	color: rgba(144, 101, 176, 1);
+	fill: rgba(144, 101, 176, 1);
+}
+.block-color-pink {
+	color: rgba(193, 76, 138, 1);
+	fill: rgba(193, 76, 138, 1);
+}
+.block-color-red {
+	color: rgba(212, 76, 71, 1);
+	fill: rgba(212, 76, 71, 1);
+}
+.block-color-default_background {
+	color: inherit;
+	fill: inherit;
+}
+.block-color-gray_background {
+	background: rgba(241, 241, 239, 1);
+}
+.block-color-brown_background {
+	background: rgba(244, 238, 238, 1);
+}
+.block-color-orange_background {
+	background: rgba(251, 236, 221, 1);
+}
+.block-color-yellow_background {
+	background: rgba(251, 237, 214, 1);
+}
+.block-color-teal_background {
+	background: rgba(237, 243, 236, 1);
+}
+.block-color-blue_background {
+	background: rgba(231, 243, 248, 1);
+}
+.block-color-purple_background {
+	background: rgba(244, 240, 247, 0.8);
+}
+.block-color-pink_background {
+	background: rgba(249, 238, 243, 0.8);
+}
+.block-color-red_background {
+	background: rgba(253, 235, 236, 1);
+}
+.select-value-color-uiBlue { background-color: rgba(35, 131, 226, .07); }
+.select-value-color-pink { background-color: rgba(245, 224, 233, 1); }
+.select-value-color-purple { background-color: rgba(232, 222, 238, 1); }
+.select-value-color-green { background-color: rgba(219, 237, 219, 1); }
+.select-value-color-gray { background-color: rgba(227, 226, 224, 1); }
+.select-value-color-transparentGray { background-color: rgba(227, 226, 224, 0); }
+.select-value-color-translucentGray { background-color: rgba(0, 0, 0, 0.06); }
+.select-value-color-orange { background-color: rgba(250, 222, 201, 1); }
+.select-value-color-brown { background-color: rgba(238, 224, 218, 1); }
+.select-value-color-red { background-color: rgba(255, 226, 221, 1); }
+.select-value-color-yellow { background-color: rgba(249, 228, 188, 1); }
+.select-value-color-blue { background-color: rgba(211, 229, 239, 1); }
+.select-value-color-pageGlass { background-color: undefined; }
+.select-value-color-washGlass { background-color: undefined; }
+
+.checkbox {
+	display: inline-flex;
+	vertical-align: text-bottom;
+	width: 16;
+	height: 16;
+	background-size: 16px;
+	margin-left: 2px;
+	margin-right: 5px;
+}
+
+.checkbox-on {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20width%3D%2216%22%20height%3D%2216%22%20fill%3D%22%2358A9D7%22%2F%3E%0A%3Cpath%20d%3D%22M6.71429%2012.2852L14%204.9995L12.7143%203.71436L6.71429%209.71378L3.28571%206.2831L2%207.57092L6.71429%2012.2852Z%22%20fill%3D%22white%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+
+.checkbox-off {
+	background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg%20width%3D%2216%22%20height%3D%2216%22%20viewBox%3D%220%200%2016%2016%22%20fill%3D%22none%22%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%3E%0A%3Crect%20x%3D%220.75%22%20y%3D%220.75%22%20width%3D%2214.5%22%20height%3D%2214.5%22%20fill%3D%22white%22%20stroke%3D%22%2336352F%22%20stroke-width%3D%221.5%22%2F%3E%0A%3C%2Fsvg%3E");
+}
+	
+</style></head><body><article id="3cf22d65-63a3-4f28-9092-aaf3b2e368d3" class="page sans"><header><img class="page-cover-image" src="emir_test.jpg" style="object-position:center 28.059999999999995%"/><h1 class="page-title">CS180 Project 1: Colorizing the Prokudin-Gorskii Photo Collection</h1><p class="page-description"></p></header><div class="page-body"><p id="3f06c9a5-7ff9-4078-be9c-f010bbed5c35" class="">Name: Shuai Victor Zhou</p><p id="fc9b4ba5-d901-4649-8c3a-cb3c2cc64253" class="">SID: 3035912996</p><hr id="31150688-f0b9-4c5b-ba0c-57f7dd2a4506"/><h2 id="81a91b77-6c37-4527-b847-b1c04a17a626" class="">Overview</h2><p id="95f2d258-d910-47a2-a680-3fa9fb4a2e39" class="">In this project, we use the pictures taken by Prokudin-Gorskii using red, green, and blue filters to produce colored images. The RGB-filtered images are provided to us in the form of a single image, where (roughly) the top third is the blue channel, the middle third is the green channel, and the bottom third is the red channel. Colored images are formed by stacking these three color channels on top of each other, bottom to top being in the order of R-G-B. We perform this stacking by conducting the following steps:</p><ol type="1" id="73dba42a-40db-4672-9af2-8f25acd8c82c" class="numbered-list" start="1"><li>Crop the original inputted image by cutting away edges on all 4 sides until the average pixel value of each side is no greater than some <em>threshold</em> and no less than some <em>1 - threshold</em>. In this project, we opt for a <em>threshold</em> of <em>0.85</em>.</li></ol><ol type="1" id="e3436b88-fc8f-4055-a4d7-62f941f1870f" class="numbered-list" start="2"><li>Cut the image into thirds and assigning the top to be the blue channel, the middle to be the green channel, and the bottom to be the red channel.</li></ol><ol type="1" id="3dabcfee-4767-4492-9789-96d5ee5bb125" class="numbered-list" start="3"><li>Crop each of the color channels using the same method as step 1.</li></ol><ol type="1" id="a61d0de0-e836-4ff8-a434-0d1d2ccb235c" class="numbered-list" start="4"><li>For each of the color channels, add random pixels on the edges until they all have the same width and height.</li></ol><ol type="1" id="b0042893-5834-43f2-8f97-79ba6d27549e" class="numbered-list" start="5"><li>Conduct the alignment of the color channels. For almost all pictures, we’ll using the blue channel as our stationary channel and move the other two channels to align with it. Smaller pictures will use a single-scale alignment method, while larger pictures will use a pyramid multi-scale alignment method.</li></ol><ol type="1" id="45157822-2395-4fb8-b1d7-f1c0c154853c" class="numbered-list" start="6"><li>Return the aligned color channels stacked on each other and convert that into an image.</li></ol><hr id="852dddc1-5df6-403e-adf6-eb7f7e1f075f"/><h2 id="5396045c-0623-4a50-a844-980b585d5925" class="">Cropping and Adding Pixels (Bells &amp; Whistles)</h2><p id="d7bc27b6-ce2b-4697-9884-bfa725366236" class="">For cropping images, we run the following idea:</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="79dac12d-e76d-40ab-8678-820856c74f2e" class="code"><code class="language-Python"># cropping images
+for side in [left, right, top, bottom]:
+	while (edgePixelAverage &gt; 0.85 or edgePixelAverage &lt; 0.15): # too bright or too dark
+		cutOff(edge)</code></pre><p id="89ca7472-84b4-44c7-9807-13ee87d7c2dd" class="">When we crop each of the color channels using the method described above, we risk the possibility of the cropped color channels having different dimensions. To account for this, for add pixels back onto the channels using the following method:</p><script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js" integrity="sha512-7Z9J3l1+EYfeaPKcGXu3MS/7T+w19WtKQY/n+xzmw4hZhJ9tyYmcUS+4QqAlzhicE5LAfMQSF3iFTK9bQdTxXg==" crossorigin="anonymous" referrerPolicy="no-referrer"></script><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerPolicy="no-referrer"/><pre id="945d7abc-151b-4909-851c-f525648b3c3d" class="code"><code class="language-Python"># adding pixels back on
+maxWidth = max(r.width, g.width, b.width)
+maxHeight = max(r.height, g.height, b.height)
+
+for channel in [r, g, b]:
+	diffInWidth = maxWidth - channel.width
+	add halfOfDiffInWidth columns on the left, each element being rand(0, 1)
+	add halfOfDiffInWidth columns on the right, each element being rand(0, 1)
+	
+for channel in [r, g, b]:
+	diffInHeight = maxHeight - channel.height
+	add halfOfDiffInHeight columns on the left, each element being rand(0, 1)
+	add halfOfDiffInHeight columns on the right, each element being rand(0, 1)</code></pre><hr id="91494109-09a0-48e0-a116-576531417525"/><h2 id="ccbcc5f4-a69c-4600-a5aa-2a82984f044e" class="">Single-Scale Aligning</h2><p id="b643da9d-1a09-4d07-8aa5-c183fabfc8fc" class="">In single-scale aligning, we align our R and G channels against the B channel by shifting each of R and G up to 15 pixels vertically and horizontally and checking how “similar” the shifted channel is to the B channel. This similar is calculated using a <strong>scorer</strong> function, which calculates the Euclidean distance between the channels.</p><figure id="f59ac156-3e39-4b60-ac9e-ae4bda2587cd" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>score</mtext><mo>=</mo><mo>∑</mo><mo>∑</mo><mo stretchy="false">(</mo><mtext>movedColor</mtext><mo>−</mo><mtext>setColor</mtext><msup><mo stretchy="false">)</mo><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">\text{score} = \sum\sum(\text{movedColor} - \text{setColor}) ^ 2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord text"><span class="mord">score</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.6em;vertical-align:-0.55em;"></span><span class="mop op-symbol large-op" style="position:relative;top:0em;">∑∑</span><span class="mopen">(</span><span class="mord text"><span class="mord">movedColor</span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1.1141em;vertical-align:-0.25em;"></span><span class="mord text"><span class="mord">setColor</span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></div></figure><p id="98cdc9c6-5e2d-4c56-8811-ca7f972a560e" class="">We neglect the square root in this scoring function since if some score <em>x</em> is greater than some score <em>y</em>, then <em>sqrt(x)</em> is still greater than <em>sqrt(y)</em> for all nonnegative <em>x</em>, <em>y</em>.</p><p id="bfd9256f-4d8d-4623-8e97-faa1eda8ed7b" class="">It is worth noting that another version of scoring possible is maximizing the correlation between the two channels, where</p><figure id="c989b78b-ced7-4f22-a5fe-ff60c372b29f" class="equation"><style>@import url('https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css')</style><div class="equation-container"><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>score</mtext><mo>=</mo><mfrac><mrow><mi>m</mi><mi>o</mi><mi>v</mi><mi>e</mi><mi>d</mi><mi>C</mi><mi>o</mi><mi>l</mi><mi>o</mi><mi>r</mi></mrow><mrow><mi mathvariant="normal">∥</mi><mi>m</mi><mi>o</mi><mi>v</mi><mi>e</mi><mi>d</mi><mi>C</mi><mi>o</mi><mi>l</mi><mi>o</mi><mi>r</mi><mi mathvariant="normal">∥</mi></mrow></mfrac><mo>⋅</mo><mfrac><mrow><mi>s</mi><mi>e</mi><mi>t</mi><mi>C</mi><mi>o</mi><mi>l</mi><mi>o</mi><mi>r</mi></mrow><mrow><mi mathvariant="normal">∥</mi><mi>s</mi><mi>e</mi><mi>t</mi><mi>C</mi><mi>o</mi><mi>l</mi><mi>o</mi><mi>r</mi><mi mathvariant="normal">∥</mi></mrow></mfrac><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\text{score} = \frac{movedColor}{\|movedColor\|} \cdot \frac{setColor}{\|setColor\|}.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord text"><span class="mord">score</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.3074em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord mathnormal">m</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mord mathnormal">e</span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal" style="margin-right:0.02778em;">or</span><span class="mord">∥</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">m</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.03588em;">v</span><span class="mord mathnormal">e</span><span class="mord mathnormal">d</span><span class="mord mathnormal" style="margin-right:0.07153em;">C</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal" style="margin-right:0.02778em;">or</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:2.3074em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3714em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">∥</span><span class="mord mathnormal">se</span><span class="mord mathnormal" style="margin-right:0.07153em;">tC</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal" style="margin-right:0.02778em;">or</span><span class="mord">∥</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">se</span><span class="mord mathnormal" style="margin-right:0.07153em;">tC</span><span class="mord mathnormal">o</span><span class="mord mathnormal" style="margin-right:0.01968em;">l</span><span class="mord mathnormal" style="margin-right:0.02778em;">or</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mord">.</span></span></span></span></span></div></figure><p id="bba9f04b-ca6c-420a-bbba-c3171939e6d7" class="">Upon attempting all 225 possible shifts for each of the R and G channels and returning the best shift for each of them (the one that produces the smallest Euclidean distance from the B channel), we stack the channels and return the final product as an image.</p><p id="b408e34d-6bfb-4a3a-80e6-0eea083a44f1" class="">
+</p><figure id="fd65caab-0ba2-431a-a92b-be02a506a83f" class="image"><a href="cathedral_result.jpg"><img style="width:376px" src="cathedral_result.jpg"/></a><figcaption>cathedral.jpg<br/>r’s shift: [-3, -1]<br/>g’s shift: [-2, -4]<br/></figcaption></figure><p id="af279a50-0484-44ab-84fb-297bc0571e6a" class="">
+</p><figure id="291cb296-3bc6-463a-8506-6bf671a31a85" class="image"><a href="monastery_result.jpg"><img style="width:377px" src="monastery_result.jpg"/></a><figcaption>monastery.jpg<br/>r’s shift: [-7, -2]<br/>g’s shift: [-5, 2]<br/></figcaption></figure><p id="e962d569-3fa5-45b0-a9f2-adb25d3fb901" class="">
+</p><figure id="26fdb397-8238-4613-8e1f-3b4e0b9aa21c" class="image"><a href="tobolsk_result.jpg"><img style="width:384px" src="tobolsk_result.jpg"/></a><figcaption>tobolsk.jpg<br/>r’s shift: [-8, 1]<br/>g’s shift: [-1, 2]<br/></figcaption></figure><p id="bbbecd6c-01e9-4365-a68e-cdf48be3a880" class="">
+</p><p id="edd7b4c2-e7a7-41c2-9584-8889ba07bfb6" class="">For <em>tobolsk.jpg</em>, we used 0.9 as the threshold for cropping (i.e. borders with average pixel value greater than 0.9 or less than 0.1 are cropped) since the sky of this picture is quite bright. Using the usual threshold of 0.85 would mess up our result.</p><hr id="53a11f91-8734-445b-ab4b-92b84a91de2c"/><h2 id="ce8baeb3-cb20-4d4b-99b1-24455efaea4f" class="">Pyramid Multi-Scale Aligning</h2><p id="f50cd9ef-ef06-4d81-844b-f7950e4f5e8a" class="">For multi-scale aligning, the fundamental underlying mechanism is still the same as what we did for single-scale, except we will do it multiple times. To align some <strong>movedColor</strong> to some <strong>setColor</strong>, we create an array for each one where element at index <em>i</em> is rescaled down by a factor of <em>2^i</em> (so the 0th element is just the original image). The smallest image is the largest rescale such that the dimensions of the images are at most 256, with the reasoning being that the smaller <em>.jpg</em> files could be aligned with just searching in a window of [-15, 15] pixels.</p><p id="429efbe8-aaf2-4848-99ed-b7d9440efe5f" class="">Given the arrays, we then work from the smallest image back up to the original image. At each “layer” (as we work right to left in our array), we conduct the same aligning as the single-scale aligning. However, after finding the best values for <strong>a</strong> and <strong>b</strong>, we multiply them by a factor of 2 and apply them to the next biggest layer. We continue this until we have the original image and conduct one more iteration of aligning.</p><p id="c0d13c27-25c4-4d41-bc5a-10e870f8fb9c" class="">For each layer’s aligning, we don’t always have to search in a window of [-15, 15]. If we enumerate our array 0, 1, etc. starting from the very right (smallest image), then for the <em>i</em>th layer, we search in a window of [<em>np.ceil(-15 / 2^i), np.ceil(15 / 2^i)</em>] pixels. This dynamically changing window allows us to cut down on runtime for larger images.</p><p id="2e6551be-cf38-4f63-8d2a-e097e75240b1" class="">
+</p><figure id="1e8f7d9b-82b1-402a-bcf2-6abb43de0ecb" class="image"><a href="church_result.jpg"><img style="width:3530px" src="church_result.jpg"/></a><figcaption>church.tif<br/>r’s shift: [-23, -7]<br/>g’s shift: [-37, -4]<br/></figcaption></figure><p id="be77e3b1-a930-4c64-8fd1-ae8a11ae8e33" class="">
+</p><figure id="0ef24df3-7d90-47b8-9acc-99ce80287e96" class="image"><a href="emir_result.jpg"><img style="width:3556px" src="emir_result.jpg"/></a><figcaption>emir.tif<br/>r’s shift: [23, 13]<br/>b’s shift: [39, -31]<br/></figcaption></figure><p id="794f7385-c573-4558-b94a-090a575f825f" class="">
+</p><figure id="c0276841-0392-485d-b2f8-12ecc13aacea" class="image"><a href="harvesters_result.jpg"><img style="width:3545px" src="harvesters_result.jpg"/></a><figcaption>harvesters.tif<br/>r’s shift: [11, 23]<br/>g’s shift: [2, 23]<br/></figcaption></figure><p id="12a97239-24b7-4777-b1db-08df6064592f" class="">
+</p><figure id="972e7acf-52c9-44e8-9084-e3936d72e29d" class="image"><a href="icon_result.jpg"><img style="width:3675px" src="icon_result.jpg"/></a><figcaption>icon.tif<br/>r’s shift: [11, 4]<br/>g’s shift: [11, 31]<br/></figcaption></figure><p id="bacfa076-2f85-46c9-b27f-bbf943636d8e" class="">
+</p><figure id="f59ec0b8-42ea-40f8-af07-a0c43b9a8cee" class="image"><a href="lady_result.jpg"><img style="width:708px" src="lady_result.jpg"/></a><figcaption>lady.tif<br/>r’s shift: [-47, 2]<br/>g’s shift: [-23, 3]<br/></figcaption></figure><p id="bcd8e837-2401-4442-946b-6c0a9012c48a" class="">
+</p><figure id="481f4859-c879-46d6-859e-c6a889ffc38c" class="image"><a href="melons_result.jpg"><img style="width:3581px" src="melons_result.jpg"/></a><figcaption>melons.tif<br/>r’s shift: [23, 23]<br/>g’s shift: [-2, 9]<br/></figcaption></figure><p id="17b26aca-8729-4cba-bb5b-18f6737be5fe" class=""><br/><br/></p><figure id="e4467cc2-aeb5-4d33-b71f-547347a4402e" class="image"><a href="onion_church_result.jpg"><img style="width:708px" src="onion_church_result.jpg"/></a><figcaption>onion_church.tif<br/>r’s shift: [-23, 47]<br/>g’s shift: [7, 31]<br/></figcaption></figure><p id="5b8976bc-c9da-4cf3-b4f1-158959fa6a51" class="">
+</p><figure id="1f669885-e724-433f-a3e6-fdd561719cc7" class="image"><a href="sculpture_result.jpg"><img style="width:3637px" src="sculpture_result.jpg"/></a><figcaption>sculpture.tif<br/>r’s shift: [23, -31]<br/>g’s shift: [-71, -8]<br/></figcaption></figure><p id="bcb8c711-41d2-4603-a9bb-1ea286856c6d" class="">
+</p><figure id="f72d15da-4703-4d21-90df-9de620d32f97" class="image"><a href="self_portrait_result.jpg"><img style="width:3549px" src="self_portrait_result.jpg"/></a><figcaption>self_portrait.tif<br/>r’s shift: [31, 47]<br/>g’s shift: [63, 29]<br/></figcaption></figure><p id="d5f990f7-59dd-48ce-bc9c-00c41887e3a9" class="">
+</p><figure id="c07d3f20-d989-45a6-a5f7-82386a2d7466" class="image"><a href="three_generations_result.jpg"><img style="width:3531px" src="three_generations_result.jpg"/></a><figcaption>three_generations.tif<br/>r’s shift: [-31, 11]<br/>g’s shift: [-21, 11]<br/></figcaption></figure><p id="01464d2b-fda2-472d-a1b6-a0f62fe2c8e5" class="">
+</p><figure id="415fc718-b2bc-46b2-914a-278fb23d3cfd" class="image"><a href="train_result.jpg"><img style="width:3599px" src="train_result.jpg"/></a><figcaption>train.tif<br/>r’s shift: [-11, 24]<br/>g’s shift: [-23, 5]<br/></figcaption></figure><p id="73c581ef-b403-4079-85bf-7b01b82df278" class="">
+</p><p id="8bdb6ae1-db3b-49f0-9763-fae8e1c0fcc8" class=""><em>emir.tif</em> produced a better result when we aligned the R and B channels onto the B channel.</p><hr id="1596a450-c446-4b6c-bc45-c6c698f4e38e"/><h2 id="3f0fb8fe-74f1-4347-84e8-7a6d752a1b08" class="">(Additional) Bells &amp; Whistles</h2><p id="ebf9dce0-3628-4175-a594-975f2c2c745f" class=""><em>*Not really meant for extra credit — just thought it was worth noting.</em></p><p id="e534587e-4c7d-4101-8bc6-f2870a4103b1" class="">Another attempt at making images clearer was to add borders of 100 pixels to all 4 sides of our images (can be seen in the Appendix section of the code at the bottom). This was done so that when <em>np.roll</em> was called, pixels on one side don’t just jump to the other, but instead would simply shift a tiny bit. This didn’t help, but perhaps the method could be improved in some other ways so as to create better aligned images (such as generating random pixels instead of all black).</p><hr id="41cac25b-2336-487a-931f-0f1444508174"/><h2 id="5291f21b-136b-4738-8df4-98ffef205801" class="">Conclusion</h2><p id="f3fdfd49-e7ac-4de1-a41b-8f432063752c" class="">Some images have a bit of a blur, but similar to <em>tobolsk.jpg</em> and <em>emir.tif</em>, they would likely be fully corrected if we made some small alterations to the threshold of cropping or the channel onto which we’re aligning our images.</p><p id="940f49a6-4016-44f2-bf56-645ed7342fe9" class="">
+</p></div></article><span class="sans" style="font-size:14px;padding-top:2em"></span></body></html>
